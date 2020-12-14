@@ -14,14 +14,20 @@ path ="src/main.rs"
 name ="app"
 
 [dependencies]
-actix-web = "3.0.0"
+actix-web = "3.3.2"
 actix-rt = "1.1.1"
-tokio = "0.2.22"
-serde = "1.0.115"
+serde = "1.0.118"
 config = { version = "0.10.1", default-features = false, features = ["yaml"] }
 sqlx = { version = "0.4.1", default-features = false, features = ["runtime-actix-rustls", "macros", "postgres", "uuid", "chrono", "migrate"] }
 uuid = { version = "0.8.1", features = ["v4"] }
-chrono = "0.4.15"
+chrono = "0.4.19"
+tracing = "0.1.22"
+tracing-futures = "0.2.4"
+tracing-subscriber ={ version = "0.2.15", features = ["registry", "env-filter"] }
+tracing-bunyan-formatter = "0.1.7"
+tracing-log = "0.1.1"
 
 [dev-dependencies]
-reqwest = { version = "0.10.7", features = ["json"] }
+lazy_static = "1.4.0"
+reqwest = { version = "0.10.9", features = ["json"] }
+tokio = "0.2.22"
