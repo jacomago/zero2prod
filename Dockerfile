@@ -6,6 +6,8 @@ FROM rust:1.47
 WORKDIR app
 # Copy all files from our working environment to our Docker image
 COPY . .
+# Set sqlx to offline mode 
+ENV SQLX_OFFLINE true
 # Let's build our binary!
 # We'll use the release profile to make it faaaast
 RUN cargo build --release
