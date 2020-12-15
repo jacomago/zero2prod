@@ -13,11 +13,7 @@ pub struct FormData {
     name = "Saving new subscriber detials in the database",
     skip(form, pool)
 )]
-pub async fn insert_subscriber(
-    pool: &PgPool,
-    form: &FormData,
-)
--> Result<(), sqlx::Error> {
+pub async fn insert_subscriber(pool: &PgPool, form: &FormData) -> Result<(), sqlx::Error> {
     sqlx::query!(
         r#"
         INSERT INTO subscriptions (id, email, name, subscribed_at)
@@ -31,10 +27,7 @@ pub async fn insert_subscriber(
     .execute(pool)
     .await
     .map_err(|e| {
-        tracing::error!(
-            "Failed to execute query: {:?}",
-            e
-        );
+        tracing::error!("Failed to execute query: {:?}", e);
         e
     })?;
     Ok(())
@@ -54,7 +47,6 @@ pub async fn subscribe(
 ) -> Result<HttpResponse, HttpResponse> {
     insert_subscriber(&pool, &form)
         .await
-        .map_err(|_|
-        HttpResponse::InternalServerError().finish())?;
+        .map_err(|_| HttpResponse::InternalServerError().finish())?;
     Ok(HttpResponse::Ok().finish())
 }
