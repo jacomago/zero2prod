@@ -1,7 +1,6 @@
 use actix_web::{web, HttpResponse};
 use chrono::Utc;
 use sqlx::PgPool;
-use tracing::Instrument;
 use uuid::Uuid;
 
 #[derive(serde::Deserialize)]
@@ -29,12 +28,11 @@ pub async fn insert_subscriber(
         form.name,
         Utc::now()
     )
-    .execute(pool.get_ref())
-    .instrument(query_span)
+    .execute(pool)
     .await
     .map_err(|e| {
         tracing::error!(
-            "request_id {} - Failed to execute query: {:?}",
+            "Failed to execute query: {:?}",
             e
         );
         e
