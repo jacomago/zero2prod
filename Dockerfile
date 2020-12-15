@@ -1,5 +1,5 @@
 # We use the latest Rust stable release as base image
-FROM rust:1.47 AS planner
+FROM rust:latest AS planner
 # Let's switch our working directory to `app` (equivalent to `cd app`)
 # The `app` folder will be created for us by Docker in case it does not
 # exist already.
@@ -11,7 +11,7 @@ RUN cargo chef prepare --recipe-path recipe.json
 
 
 # Caching stage
-FROM rust:1.47 AS cacher
+FROM rust:latest AS cacher
 WORKDIR app
 RUN cargo install cargo-chef
 COPY --from=planner /app/recipe.json recipe.json
@@ -19,7 +19,7 @@ COPY --from=planner /app/recipe.json recipe.json
 RUN cargo chef cook --release --recipe-path recipe.json
 
 # Building stage
-FROM rust:1.4.7 AS builder
+FROM rust:latest AS builder
 WORKDIR app
 # copy cached dep
 COPY --from=cacher /app/target target
