@@ -9,6 +9,7 @@ name: zero2prod
 region: fra
 services:
   - name: zero2prod
+
     # Relative to the repository root
     dockerfile_path: Dockerfile
     source_dir: .
@@ -36,6 +37,19 @@ services:
     # All incoming requests should be routed to our app
     routes:
       - path: /
+    envs:
+      - key: APP_DATABASE__USERNAME
+        scope: RUN_TIME
+        value: ${ newsletter.USERNAME }
+      - key: APP_DATABASE__PASSWORD
+        scope: RUN_TIME
+        value: ${ newsletter.PASSWORD }
+      - key: APP_DATABASE__HOSTNAME
+        scope: RUN_TIME
+        value: ${ newsletter.HOSTNAME }
+      - key: APP_DATABASE__DATABASE_NAME
+        scope: RUN_TIME
+        value: ${ newsletter.DATABASE_NAME }
 databases:
   # PG = Postgres
   - engine: PG
