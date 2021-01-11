@@ -39,7 +39,6 @@ impl AsRef<str> for SubscriberName {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use std::vec;
