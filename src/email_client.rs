@@ -80,7 +80,6 @@ mod tests {
         fn matches(&self, request: &Request) -> bool {
             let result: Result<serde_json::Value, _> = serde_json::from_slice(&request.body);
             if let Ok(body) = result {
-                dbg!(&body);
                 body.get("From").is_some()
                     && body.get("To").is_some()
                     && body.get("Subject").is_some()
@@ -171,7 +170,7 @@ mod tests {
         assert_err!(outcome);
     }
 
-    #[tokio::test(threaded_scheduler)]
+    #[tokio::test]
     async fn send_email_times_out_if_the_server_takes_to_long() {
         //Arrange
         let mock_server = MockServer::start().await;
