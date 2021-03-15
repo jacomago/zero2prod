@@ -74,13 +74,21 @@ pub async fn subscribe(
         .await
         .map_err(|_| HttpResponse::InternalServerError().finish())?;
 
+    let confirmation_link = "https://api.com/subscriptions/confirm?subscription_token=atoken";
     // Send an email to the new subscriber.
     let _ = email_client
         .send_email(
             new_subscriber.email,
             "Welcome!",
-            "Welcome to our newsletter!",
-            "Welcome to our newsletter!",
+            &format!(
+                "Welcome to our newsletter!<br /> \
+            Click <a href=\"{}\">here</a> to confirm your subscription.",
+                confirmation_link
+            ),
+            &format!(
+                "Welcome to our newsletter! \n Visit {} to confirm your subscription.",
+                confirmation_link
+            ),
         )
         .await;
 
