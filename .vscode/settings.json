@@ -8,5 +8,17 @@
         "latex",
         "plaintext",
         "rust"
+    ],
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "docker",
+            "username": "postgres",
+            "password": "password",
+            "database": "newsletter"
+        }
     ]
 }
