@@ -118,6 +118,7 @@ async fn subscribe_sends_a_confirmation_email_with_a_link() {
     // Parse the body as a string, starting from raw bytes
     let body: serde_json::Value = serde_json::from_slice(&email_request.body).unwrap();
 
+    println!("body is {}", body);
     // Extract the link from one of the request fields.
     let get_link = |s: &str| {
         let links: Vec<_> = linkify::LinkFinder::new()

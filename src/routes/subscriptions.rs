@@ -8,6 +8,7 @@ use uuid::Uuid;
 use crate::{
     domain::{NewSubscriber, SubscriberEmail, SubscriberName},
     email_client::EmailClient,
+    startup::ApplicationBaseUrl,
 };
 
 #[derive(serde::Deserialize)]
@@ -55,7 +56,7 @@ impl TryInto<NewSubscriber> for FormData {
 
 #[tracing::instrument(
     name = "Adding a new subscriber",
-    skip(form, pool, email_client),
+    skip(form, pool, email_client, base_url),
     fields(
         email = %form.email,
         name = %form.name
@@ -65,6 +66,7 @@ pub async fn subscribe(
     form: web::Form<FormData>,
     pool: web::Data<PgPool>,
     email_client: web::Data<EmailClient>,
+    base_url: web::Data<ApplicationBaseUrl>,
 ) -> Result<HttpResponse, HttpResponse> {
     let new_subscriber = form
         .0
@@ -74,20 +76,24 @@ pub async fn subscribe(
         .await
         .map_err(|_| HttpResponse::InternalServerError().finish())?;
 
-    let _ = send_confirmation_email(&email_client, new_subscriber).await;
+    let _ = send_confirmation_email(&email_client, new_subscriber, &base_url.0).await;
 
     Ok(HttpResponse::Ok().finish())
 }
 
 #[tracing::instrument(
     name = "Send a confirmation email to a new subscriber",
-    skip(new_subscriber, email_client)
+    skip(new_subscriber, email_client, base_url)
 )]
 pub async fn send_confirmation_email(
     email_client: &EmailClient,
     new_subscriber: NewSubscriber,
+    base_url: &str,
 ) -> Result<(), reqwest::Error> {
-    let confirmation_link = "https://api.com/subscriptions/confirm";
+    let confirmation_link = format!(
+        "{}/subscriptions/confirm?subscription_token=mytoken",
+        base_url
+    );
     let plain_body = format!(
         "Welcome to our newsletter! \n Visit {} to confirm your subscription.",
         confirmation_link
