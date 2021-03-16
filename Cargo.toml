@@ -30,6 +30,7 @@ tracing-actix-web = "0.3.0-beta"
 serde-aux = "1.1.0"
 unicode-segmentation = "1.7.1"
 validator = "0.12.0"
+rand = {version ="0.8", features=["std_rng"]}
 
 [dev-dependencies]
 claim = "0.4.0"
