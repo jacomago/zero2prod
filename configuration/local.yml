@@ -1,5 +1,0 @@
-application:
-  host: localhost
-  base_url: "http://localhost"
-database:
-  require_ssl: false
