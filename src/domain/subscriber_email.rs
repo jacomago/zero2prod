@@ -26,7 +26,6 @@ mod tests {
     use fake::faker::internet::en::SafeEmail;
     use fake::Fake;
 
-
     #[test]
     fn empty_string_is_rejected() {
         let email = "".to_string();
@@ -43,7 +42,6 @@ mod tests {
         assert_err!(SubscriberEmail::parse(email));
     }
 
-    
     #[derive(Debug, Clone)]
     struct ValidEmailFixture(pub String);
 
