@@ -17,7 +17,7 @@ impl EmailClient {
     ) -> Self {
         Self {
             http_client: Client::new(),
-            base_url: reqwest::Url::parse(&base_url).expect("correct url"),
+            base_url: reqwest::Url::parse(&base_url).expect("url string is a valid url"),
             sender,
             authorization_token,
         }
@@ -30,7 +30,7 @@ impl EmailClient {
         html_content: &str,
         text_content: &str,
     ) -> Result<(), reqwest::Error> {
-        let url = self.base_url.join("email").expect("Parse url");
+        let url = self.base_url.join("email").expect("join email to url");
         let request_body = SendEmailRequest {
             from: self.sender.as_ref(),
             to: recipient.as_ref(),
