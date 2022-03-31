@@ -46,7 +46,7 @@ impl EmailClient {
                 self.authorization_token.expose_secret(),
             )
             .json(&request_body);
-        builder.send().await?;
+        builder.send().await?.error_for_status()?;
         Ok(())
     }
 }
