@@ -4,3 +4,7 @@ tests/
 Dockerfile
 scripts/
 migrations/
+
+# Git
+.git
+.gitignore
