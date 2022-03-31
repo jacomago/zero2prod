@@ -15,8 +15,9 @@ impl EmailClient {
         sender: SubscriberEmail,
         authorization_token: Secret<String>,
     ) -> Self {
+        let http_client = Client::builder().timeout(std::time::Duration::from_secs(10)).build().unwrap();
         Self {
-            http_client: Client::new(),
+            http_client,
             base_url: reqwest::Url::parse(&base_url).expect("url string is a valid url"),
             sender,
             authorization_token,
