@@ -51,7 +51,7 @@ async fn configure_database(config: &DatabaseSettings) -> PgPool {
     connection_pool
 }
 
-async fn spawn_app() -> TestApp {
+pub async fn spawn_app() -> TestApp {
     Lazy::force(&TRACING);
     let local_address = "127.0.0.1";
     let listener = TcpListener::bind(format!("{}:{}", local_address, "0"))
