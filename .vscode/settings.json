@@ -1,5 +1,4 @@
 {
-    "rust-analyzer.checkOnSave.extraArgs": [
-        "--all-targets"
-    ]
+  "rust-analyzer.checkOnSave.extraArgs": ["--all-targets"],
+  "cSpell.enabled": true
 }
