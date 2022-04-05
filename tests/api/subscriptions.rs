@@ -12,7 +12,7 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
         .respond_with(ResponseTemplate::new(200))
         .mount(&app.email_server)
         .await;
-    
+
     let response = app.post_subscriptions(body.into()).await;
 
     // Assert
