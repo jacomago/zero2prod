@@ -64,7 +64,7 @@ impl TestApp {
             let raw_link = links[0].as_str().to_owned();
             let mut confirmation_link = reqwest::Url::parse(&raw_link).unwrap();
             // Let's make sure we don't call random APIs on the web
-            assert_eq!(confirmation_link.host_str().unwrap(), "127.0.0.1");
+            assert_eq!(confirmation_link.host_str().unwrap(), "localhost");
             confirmation_link.set_port(Some(self.port)).unwrap();
             confirmation_link
         };
@@ -121,7 +121,7 @@ pub async fn spawn_app() -> TestApp {
         .expect("Failed to build application.");
     // Get the port before spawning the application
     let application_port = application.port();
-    let address = format!("http://127.0.0.1:{}", application_port);
+    let address = format!("http://localhost:{}", application_port);
     let _ = tokio::spawn(application.run_until_stopped());
 
     TestApp {
