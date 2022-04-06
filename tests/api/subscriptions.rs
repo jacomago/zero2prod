@@ -101,14 +101,36 @@ async fn subscribe_sends_a_confirmation_email_for_valid_data() {
     Mock::given(path("/email"))
         .and(method("POST"))
         .respond_with(ResponseTemplate::new(200))
+        .expect(1)
         .mount(&app.email_server)
         .await;
 
     // Act
-    let response = app.post_subscriptions(body.into()).await;
+    app.post_subscriptions(body.into()).await;
 
     // Assert
-    assert_eq!(200, response.status().as_u16());
+    // Mock asserts on drop
+}
+
+#[tokio::test]
+async fn two_subscribes_sends_two_confirmation_emails_for_valid_data() {
+    // Arrange
+    let app = spawn_app().await;
+    let body = "name=le%20guin&email=ursula_le_guin%40gmail.com";
+
+    Mock::given(path("/email"))
+        .and(method("POST"))
+        .respond_with(ResponseTemplate::new(200))
+        .expect(2)
+        .mount(&app.email_server)
+        .await;
+
+    // Act
+    app.post_subscriptions(body.into()).await;
+    app.post_subscriptions(body.into()).await;
+
+    // Assert
+    // Mock asserts on drop
 }
 
 #[tokio::test]
