@@ -49,7 +49,7 @@ async fn the_link_returned_by_subscribe_returns_a_200_if_called() {
     // Let's make sure we don't call random APIs on the web
     assert_eq!(confirmation_link.host_str().unwrap(), "127.0.0.1");
     confirmation_link.set_port(Some(app.port)).unwrap();
-    
+
     // Act
     let response = reqwest::get(confirmation_link).await.unwrap();
 

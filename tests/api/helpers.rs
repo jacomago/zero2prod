@@ -30,7 +30,7 @@ pub struct TestApp {
     pub address: String,
     pub db_pool: PgPool,
     pub email_server: MockServer,
-    pub port: u16
+    pub port: u16,
 }
 
 impl TestApp {
