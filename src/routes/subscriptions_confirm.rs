@@ -37,7 +37,7 @@ pub async fn confirm_subscriber(pool: &PgPool, subscriber_id: Uuid) -> Result<()
         tracing::error!("Failed to execute query: {:?}", e);
         e
     })?;
-    
+
     Ok(())
 }
 
