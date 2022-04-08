@@ -75,7 +75,7 @@ pub async fn subscribe(
     email_client: web::Data<EmailClient>,
     base_url: web::Data<ApplicationBaseUrl>,
 ) -> HttpResponse {
-    let new_subscriber = match form.0.try_into() {
+    let new_subscriber: NewSubscriber = match form.0.try_into() {
         Ok(form) => form,
         Err(_) => return HttpResponse::BadRequest().finish(),
     };
@@ -84,10 +84,17 @@ pub async fn subscribe(
         Ok(transaction) => transaction,
         Err(_) => return HttpResponse::InternalServerError().finish(),
     };
-    let sub_id = match insert_subscriber(&mut transaction, &new_subscriber).await {
+    let sub_id = match select_subscriber_by_email(&mut transaction, &new_subscriber.email).await {
         Ok(sub_id) => sub_id,
+        Err(sqlx::Error::RowNotFound) => {
+            match insert_subscriber(&mut transaction, &new_subscriber).await {
+                Ok(sub_id) => sub_id,
+                Err(_) => return HttpResponse::InternalServerError().finish(),
+            }
+        }
         Err(_) => return HttpResponse::InternalServerError().finish(),
     };
+
     let subscription_token = generate_subscription_token();
     if store_token(&mut transaction, sub_id, &subscription_token)
         .await
@@ -165,4 +172,27 @@ pub async fn insert_subscriber(
         e
     })?;
     Ok(sub_id)
+}
+
+#[tracing::instrument(
+    name = "Select subscriber details in the database",
+    skip(subscriber_email, transaction)
+)]
+pub async fn select_subscriber_by_email(
+    transaction: &mut Transaction<'_, Postgres>,
+    subscriber_email: &SubscriberEmail,
+) -> Result<Uuid, sqlx::Error> {
+    let sub_record = sqlx::query!(
+        r#"
+    SELECT id FROM subscriptions WHERE email = $1
+    "#,
+        subscriber_email.as_ref(),
+    )
+    .fetch_one(transaction)
+    .await
+    .map_err(|e| {
+        tracing::error!("Failed to execute query: {:?}", e);
+        e
+    })?;
+    Ok(sub_record.id)
 }
