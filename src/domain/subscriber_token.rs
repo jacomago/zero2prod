@@ -60,7 +60,7 @@ impl SubscriberToken {
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::{SubscriberToken, subscriber_token::generate_subscription_token};
+    use crate::domain::{subscriber_token::generate_subscription_token, SubscriberToken};
     use claim::{assert_err, assert_ok};
     #[test]
     fn a_25_grapheme_long_token_is_valid() {
