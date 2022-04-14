@@ -73,6 +73,11 @@ mod tests {
         assert_err!(SubscriberToken::parse(token));
     }
     #[test]
+    fn a_token_shorter_than_25_graphemes_is_rejected() {
+        let token = "a".repeat(24);
+        assert_err!(SubscriberToken::parse(token));
+    }
+    #[test]
     fn whitespace_only_tokens_are_rejected() {
         let token = " ".to_string();
         assert_err!(SubscriberToken::parse(token));
