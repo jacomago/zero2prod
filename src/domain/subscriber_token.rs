@@ -21,10 +21,10 @@ impl AsRef<str> for SubscriberToken {
 }
 
 fn check_alphanumeric(ch: char) -> bool {
-    if (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') {
+    if ('0'..='9').contains(&ch) || ('a'..='z').contains(&ch) || ('A'..='Z').contains(&ch) {
         return true;
     }
-    return false;
+    false
 }
 
 impl SubscriberToken {
@@ -55,6 +55,12 @@ impl SubscriberToken {
     pub fn new() -> Self {
         let token = generate_subscription_token();
         Self(token)
+    }
+}
+
+impl Default for SubscriberToken {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
