@@ -5,10 +5,10 @@ use actix_web::http::StatusCode;
 use actix_web::{web, HttpResponse, ResponseError};
 use anyhow::Context;
 use chrono::Utc;
+use lazy_static::lazy_static;
 use sqlx::{PgPool, Postgres, Transaction};
 use tera::Tera;
 use uuid::Uuid;
-use lazy_static::lazy_static;
 
 fn error_chain_fmt(
     e: &impl std::error::Error,
@@ -81,13 +81,15 @@ pub async fn send_confirmation_email(
     base_url: &str,
     subscription_token: &SubscriberToken,
 ) -> Result<(), reqwest::Error> {
-    let confirmation_link = format!(
-        "{}/subscriptions/confirm?subscription_token={}",
-        base_url,
-        subscription_token.as_ref()
-    );
     let mut context = tera::Context::new();
-    context.insert("link", &confirmation_link);
+    context.insert(
+        "link",
+        &format!(
+            "{}/subscriptions/confirm?subscription_token={}",
+            base_url,
+            subscription_token.as_ref()
+        ),
+    );
     let html_body = TEMPLATES.render("html_email.html", &context).unwrap();
 
     let plain_body = TEMPLATES.render("plain_email.txt", &context).unwrap();
