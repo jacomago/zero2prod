@@ -4,7 +4,7 @@ use crate::startup::ApplicationBaseUrl;
 use actix_web::{web, HttpResponse};
 use chrono::Utc;
 use sqlx::{PgPool, Postgres, Transaction};
-use tera::{Tera, Context};
+use tera::{Context, Tera};
 use uuid::Uuid;
 
 #[derive(serde::Deserialize)]
@@ -49,7 +49,7 @@ pub async fn send_confirmation_email(
     let html_body = tera.render("html_email.html", &context).unwrap();
 
     let plain_body = tera.render("plain_email.txt", &context).unwrap();
-    
+
     email_client
         .send_email(new_subscriber.email, "Welcome!", &html_body, &plain_body)
         .await

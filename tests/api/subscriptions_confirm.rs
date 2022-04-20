@@ -20,9 +20,12 @@ async fn confirmations_without_valid_token_are_rejected_with_a_400() {
     let app = spawn_app().await;
 
     // Act
-    let response = reqwest::get(&format!("{}/subscriptions/confirm?subscription_token=f", app.address))
-        .await
-        .unwrap();
+    let response = reqwest::get(&format!(
+        "{}/subscriptions/confirm?subscription_token=f",
+        app.address
+    ))
+    .await
+    .unwrap();
 
     // Assert
     assert_eq!(response.status().as_u16(), 400);
