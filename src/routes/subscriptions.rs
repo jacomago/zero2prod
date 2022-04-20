@@ -8,6 +8,7 @@ use chrono::Utc;
 use sqlx::{PgPool, Postgres, Transaction};
 use tera::Tera;
 use uuid::Uuid;
+use lazy_static::lazy_static;
 
 fn error_chain_fmt(
     e: &impl std::error::Error,
@@ -58,6 +59,18 @@ impl TryFrom<FormData> for NewSubscriber {
     }
 }
 
+lazy_static! {
+    pub static ref TEMPLATES: Tera = {
+        match Tera::new("templates/**/*") {
+            Ok(t) => t,
+            Err(e) => {
+                println!("Parsing error(s): {}", e);
+                ::std::process::exit(1);
+            }
+        }
+    };
+}
+
 #[tracing::instrument(
     name = "Send a confirmation email to a new subscriber",
     skip(email_client, new_subscriber, base_url)
@@ -68,13 +81,6 @@ pub async fn send_confirmation_email(
     base_url: &str,
     subscription_token: &SubscriberToken,
 ) -> Result<(), reqwest::Error> {
-    let tera = match Tera::new("templates/**/*") {
-        Ok(t) => t,
-        Err(e) => {
-            println!("Parsing error(s): {}", e);
-            ::std::process::exit(1);
-        }
-    };
     let confirmation_link = format!(
         "{}/subscriptions/confirm?subscription_token={}",
         base_url,
@@ -82,9 +88,9 @@ pub async fn send_confirmation_email(
     );
     let mut context = tera::Context::new();
     context.insert("link", &confirmation_link);
-    let html_body = tera.render("html_email.html", &context).unwrap();
+    let html_body = TEMPLATES.render("html_email.html", &context).unwrap();
 
-    let plain_body = tera.render("plain_email.txt", &context).unwrap();
+    let plain_body = TEMPLATES.render("plain_email.txt", &context).unwrap();
 
     email_client
         .send_email(new_subscriber.email, "Welcome!", &html_body, &plain_body)

@@ -3054,6 +3054,7 @@ dependencies = [
  "claim",
  "config",
  "fake",
+ "lazy_static",
  "linkify",
  "once_cell",
  "quickcheck",
