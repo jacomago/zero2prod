@@ -3,11 +3,11 @@
 
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <title>Home</title>
+    <title>{% block title %}{% endblock title %} - Newsletter Service</title>
 </head>
 
 <body>
-    <p>Welcome to our newsletter!</p>
+    {% block body %}{% endblock body %}
 </body>
 
 </html>
