@@ -83,7 +83,7 @@ pub fn run(
     let server = HttpServer::new(move || {
         App::new()
             .wrap(TracingLogger::default())
-            .route("/", web::get().to(home)
+            .route("/", web::get().to(home))
             .route("/newsletters", web::post().to(publish_newsletter))
             .route("/health_check", web::get().to(health_check))
             // A new entry in our routing table for POST /subscriptions requests
