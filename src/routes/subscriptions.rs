@@ -12,7 +12,6 @@ use uuid::Uuid;
 
 use super::error_chain_fmt;
 
-
 #[derive(thiserror::Error)]
 pub enum SubscribeError {
     #[error("{0}")]

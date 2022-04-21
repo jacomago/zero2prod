@@ -36,7 +36,7 @@ thiserror = "1"
 anyhow = "1"
 lazy_static = "1.0"
 base64 = "0.13"
-sha3 = "0.9"
+argon2 = { version = "0.3", features = ["std"] }
 
 [dependencies.tera]
 version = "1"
