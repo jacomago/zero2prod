@@ -9,8 +9,15 @@ pub struct QueryParams {
 }
 
 pub async fn login_form(query: web::Query<QueryParams>) -> HttpResponse {
-    let _error = query.0.error;
+    let mut login_context = Context::new();
+    login_context.insert(
+        "error_message",
+        &match query.0.error {
+            None => "".into(),
+            Some(message) => message,
+        },
+    );
     HttpResponse::Ok()
         .content_type(ContentType::html())
-        .body(TEMPLATES.render("login.html", &Context::new()).unwrap())
+        .body(TEMPLATES.render("login.html", &login_context).unwrap())
 }
