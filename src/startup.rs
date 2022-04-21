@@ -9,7 +9,7 @@ use std::net::TcpListener;
 use tracing_actix_web::TracingLogger;
 
 use crate::configuration::DatabaseSettings;
-use crate::routes::{confirm, health_check, publish_newsletter, subscribe, home};
+use crate::routes::{confirm, health_check, home, login_form, publish_newsletter, subscribe};
 
 pub fn get_connection_pool(configuration: &DatabaseSettings) -> PgPool {
     PgPoolOptions::new()
@@ -84,6 +84,7 @@ pub fn run(
         App::new()
             .wrap(TracingLogger::default())
             .route("/", web::get().to(home))
+            .route("/login", web::get().to(login_form))
             .route("/newsletters", web::post().to(publish_newsletter))
             .route("/health_check", web::get().to(health_check))
             // A new entry in our routing table for POST /subscriptions requests
