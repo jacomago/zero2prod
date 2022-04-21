@@ -1,8 +1,11 @@
+use actix_web::HttpRequest;
 use actix_web::http::StatusCode;
+use actix_web::http::header::HeaderMap;
 use actix_web::web;
 use actix_web::HttpResponse;
 use actix_web::ResponseError;
 use anyhow::Context;
+use secrecy::Secret;
 use sqlx::PgPool;
 
 use crate::domain::SubscriberEmail;
@@ -47,7 +50,9 @@ pub async fn publish_newsletter(
     body: web::Json<BodyData>,
     pool: web::Data<PgPool>,
     email_client: web::Data<EmailClient>,
+    request: HttpRequest
 ) -> Result<HttpResponse, PublishError> {
+    let _credentials = basic_authentication(request.headers());
     let subscribers = get_confirmed_subscribers(&pool).await?;
     for subscriber in subscribers {
         match subscriber {
@@ -74,6 +79,15 @@ pub async fn publish_newsletter(
         }
     }
     Ok(HttpResponse::Ok().finish())
+}
+
+struct Credentials {
+    username: String,
+    password: Secret<String>
+}
+
+fn basic_authentication(headers: &HeaderMap) -> Result<Credentials, anyhow::Error> {
+    todo!()
 }
 
 struct ConfirmedSubscriber {
