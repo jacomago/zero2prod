@@ -19,10 +19,6 @@ serde-aux = "3"
 config = "0.11.0"
 uuid = { version = "0.8.1", features = ["v4"] }
 chrono = "0.4.15"
-reqwest = { version = "0.11", default-features = false, features = [
-    "json",
-    "rustls-tls"
-] }
 secrecy = { version = "0.8", features = ["serde"] }
 tracing = { version = "0.1", features = ["log"] }
 tracing-log = "0.1"
@@ -41,6 +37,11 @@ urlencoding = "2"
 hmac = { version = "0.12", features = ["std"] }
 sha2 = "0.10"
 hex = "0.4"
+
+[dependencies.reqwest]
+version = "0.11"
+default-features = false
+features = ["json", "rustls-tls", "cookies"]
 
 [dependencies.tera]
 version = "1"
