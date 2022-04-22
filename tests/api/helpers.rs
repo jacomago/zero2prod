@@ -43,6 +43,17 @@ pub struct TestApp {
 }
 
 impl TestApp {
+    pub async fn get_login_html(&self) -> String {
+        reqwest::Client::new()
+            .get(&format!("{}/login", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute request")
+            .text()
+            .await
+            .unwrap()
+    }
+    
     pub async fn post_login<Body>(&self, body: &Body) -> reqwest::Response
     where
         Body: serde::Serialize,
