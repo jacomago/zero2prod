@@ -1,8 +1,4 @@
-use actix_web::{
-    cookie::{time::Duration, Cookie},
-    http::header::ContentType,
-    HttpRequest, HttpResponse,
-};
+use actix_web::{cookie::Cookie, http::header::ContentType, HttpRequest, HttpResponse};
 use tera::Context;
 
 use crate::routes::TEMPLATES;
@@ -14,8 +10,11 @@ pub async fn login_form(request: HttpRequest) -> HttpResponse {
         Some(cookie) => cookie.value().to_string(),
     };
     login_context.insert("error_message", &error_message);
-    HttpResponse::Ok()
+    let mut response = HttpResponse::Ok()
         .content_type(ContentType::html())
-        .cookie(Cookie::build("_flash", "").max_age(Duration::ZERO).finish())
-        .body(TEMPLATES.render("login.html", &login_context).unwrap())
+        .body(TEMPLATES.render("login.html", &login_context).unwrap());
+    response
+        .add_removal_cookie(&Cookie::new("_flash", ""))
+        .unwrap();
+    response
 }
