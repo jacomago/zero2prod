@@ -1,4 +1,8 @@
-use actix_web::{http::header::ContentType, HttpRequest, HttpResponse};
+use actix_web::{
+    cookie::{time::Duration, Cookie},
+    http::header::ContentType,
+    HttpRequest, HttpResponse,
+};
 use tera::Context;
 
 use crate::routes::TEMPLATES;
@@ -12,5 +16,6 @@ pub async fn login_form(request: HttpRequest) -> HttpResponse {
     login_context.insert("error_message", &error_message);
     HttpResponse::Ok()
         .content_type(ContentType::html())
+        .cookie(Cookie::build("_flash", "").max_age(Duration::ZERO).finish())
         .body(TEMPLATES.render("login.html", &login_context).unwrap())
 }
