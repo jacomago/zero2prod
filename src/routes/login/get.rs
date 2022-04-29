@@ -1,20 +1,20 @@
-use actix_web::{cookie::Cookie, http::header::ContentType, HttpRequest, HttpResponse};
+use actix_web::{http::header::ContentType, HttpResponse};
+use actix_web_flash_messages::{IncomingFlashMessages, Level};
+use std::fmt::Write;
 use tera::Context;
 
 use crate::routes::TEMPLATES;
 
-pub async fn login_form(request: HttpRequest) -> HttpResponse {
+pub async fn login_form(flash_messages: IncomingFlashMessages) -> HttpResponse {
+    let mut error_message = String::new();
+    for m in flash_messages.iter().filter(|m| m.level() == Level::Error) {
+        writeln!(error_message, "<p><i>{}</i></p>", m.content()).unwrap();
+    }
+
     let mut login_context = Context::new();
-    let error_message = match request.cookie("_flash") {
-        None => "".into(),
-        Some(cookie) => cookie.value().to_string(),
-    };
     login_context.insert("error_message", &error_message);
-    let mut response = HttpResponse::Ok()
+
+    HttpResponse::Ok()
         .content_type(ContentType::html())
-        .body(TEMPLATES.render("login.html", &login_context).unwrap());
-    response
-        .add_removal_cookie(&Cookie::new("_flash", ""))
-        .unwrap();
-    response
+        .body(TEMPLATES.render("login.html", &login_context).unwrap())
 }
