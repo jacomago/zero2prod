@@ -17,7 +17,7 @@ use tracing_actix_web::TracingLogger;
 
 use crate::configuration::DatabaseSettings;
 use crate::routes::{
-    confirm, health_check, home, login, login_form, publish_newsletter, subscribe,
+    confirm, health_check, home, login, login_form, publish_newsletter, subscribe, admin_dashboard,
 };
 
 pub fn get_connection_pool(configuration: &DatabaseSettings) -> PgPool {
@@ -112,6 +112,7 @@ async fn run(
             .route("/", web::get().to(home))
             .route("/login", web::get().to(login_form))
             .route("/login", web::post().to(login))
+            .route("/admin/dashboard", web::get().to(admin_dashboard))
             .route("/newsletters", web::post().to(publish_newsletter))
             .route("/health_check", web::get().to(health_check))
             // A new entry in our routing table for POST /subscriptions requests
