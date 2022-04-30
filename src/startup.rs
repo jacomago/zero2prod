@@ -17,7 +17,7 @@ use tracing_actix_web::TracingLogger;
 
 use crate::configuration::DatabaseSettings;
 use crate::routes::{
-    confirm, health_check, home, login, login_form, publish_newsletter, subscribe, admin_dashboard,
+    admin_dashboard, confirm, health_check, home, login, login_form, publish_newsletter, subscribe,
 };
 
 pub fn get_connection_pool(configuration: &DatabaseSettings) -> PgPool {
