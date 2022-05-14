@@ -32,7 +32,7 @@ pub async fn admin_dashboard(
     admin_context.insert("username", &username);
     Ok(HttpResponse::Ok()
         .content_type(ContentType::html())
-        .body(TEMPLATES.render("admin.html", &admin_context).unwrap()))
+        .body(TEMPLATES.render("admin/dashboard.html", &admin_context).unwrap()))
 }
 
 #[tracing::instrument(name = "Get username", skip(pool))]
