@@ -30,9 +30,11 @@ pub async fn admin_dashboard(
 
     let mut admin_context = tera::Context::new();
     admin_context.insert("username", &username);
-    Ok(HttpResponse::Ok()
-        .content_type(ContentType::html())
-        .body(TEMPLATES.render("admin/dashboard.html", &admin_context).unwrap()))
+    Ok(HttpResponse::Ok().content_type(ContentType::html()).body(
+        TEMPLATES
+            .render("admin/dashboard.html", &admin_context)
+            .unwrap(),
+    ))
 }
 
 #[tracing::instrument(name = "Get username", skip(pool))]
