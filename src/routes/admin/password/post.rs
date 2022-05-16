@@ -5,6 +5,7 @@ use sqlx::PgPool;
 
 use crate::{
     authentication::{validate_credentials, AuthError, Credentials},
+    domain::NewPassword,
     routes::{admin::dashboard::get_username, e500, see_other},
     session_state::TypedSession,
 };
@@ -34,6 +35,7 @@ pub async fn change_password(
         .send();
         return Ok(see_other("/admin/password"));
     }
+
     let username = get_username(user_id, &pool).await.map_err(e500)?;
     let credentials = Credentials {
         username,
@@ -47,6 +49,11 @@ pub async fn change_password(
             }
             AuthError::UnexpectedError(_) => Err(e500(e)),
         };
+    }
+
+    if let Err(e) = NewPassword::parse(form.0.new_password) {
+        FlashMessage::error(e).send();
+        return Ok(see_other("/admin/password"));
     }
     todo!()
 }
