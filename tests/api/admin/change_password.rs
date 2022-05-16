@@ -67,15 +67,15 @@ async fn current_password_must_be_valid() {
 
     // Act - Part 1 - Login
     app.post_login(&serde_json::json!({
-        "username": &app.test_user.username,    
-        "password": &app.test_user.password 
+        "username": &app.test_user.username,
+        "password": &app.test_user.password
     }))
     .await;
 
     // Act - Part 2 - Try to change password
     let response = app.post_change_password(&serde_json::json!({
         "current_password": &wrong_password, "new_password": &new_password, "new_password_check": &new_password,
-    })) 
+    }))
     .await;
 
     // Assert
