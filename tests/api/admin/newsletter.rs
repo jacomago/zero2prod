@@ -17,11 +17,7 @@ async fn newsletters_are_not_delivered_to_unconfirmed_subscribers() {
     // Act
 
     // Act - Part 1 - Login
-    let login_body = serde_json::json!({
-        "username": &app.test_user.username,
-        "password": &app.test_user.password });
-    let response = app.post_login(&login_body).await;
-    assert_is_redirect_to(&response, "/admin/dashboard");
+    app.test_user.login(&app).await;
 
     let newsletter_request_body = serde_json::json!({
         "title": "Newsletter title",
@@ -54,11 +50,7 @@ async fn newsletters_are_delivered_to_confirmed_subscribers() {
 
     // Act
     // Act - Part 1 - Login
-    let login_body = serde_json::json!({
-        "username": &app.test_user.username,
-        "password": &app.test_user.password });
-    let response = app.post_login(&login_body).await;
-    assert_is_redirect_to(&response, "/admin/dashboard");
+    app.test_user.login(&app).await;
 
     let newsletter_request_body = serde_json::json!({
         "title": "Newsletter title",
@@ -95,11 +87,7 @@ async fn newsletters_returns_400_for_invalid_data() {
     ];
 
     // Act - Part 1 - Login
-    let login_body = serde_json::json!({
-        "username": &app.test_user.username,
-        "password": &app.test_user.password });
-    let response = app.post_login(&login_body).await;
-    assert_is_redirect_to(&response, "/admin/dashboard");
+    app.test_user.login(&app).await;
 
     for (invalid_body, error_message) in test_cases {
         let response = app.post_newsletters(&invalid_body).await;
@@ -189,11 +177,7 @@ async fn newsletters_page_is_not_empty() {
     // Act
 
     // Act - Part 1 - Login
-    let login_body = serde_json::json!({
-        "username": &app.test_user.username,
-        "password": &app.test_user.password });
-    let response = app.post_login(&login_body).await;
-    assert_is_redirect_to(&response, "/admin/dashboard");
+    app.test_user.login(&app).await;
 
     // Act - Part 2 - Get Send Newsletter Page
     let html_page = app.get_newsletters_html().await;

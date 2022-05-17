@@ -72,4 +72,6 @@ impl TestApp {
     pub async fn get_newsletters_html(&self) -> String {
         self.get_newsletters().await.text().await.unwrap()
     }
+
+    
 }
