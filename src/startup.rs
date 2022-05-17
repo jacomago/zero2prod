@@ -122,9 +122,9 @@ async fn run(
                     .route("/password", web::get().to(change_password_form))
                     .route("/password", web::post().to(change_password))
                     .route("/logout", web::post().to(log_out))
-                    .route("/newsletters", web::get().to(newsletter_form)),
+                    .route("/newsletters", web::get().to(newsletter_form))
+                    .route("/newsletters", web::post().to(publish_newsletter)),
             )
-            .route("/newsletters", web::post().to(publish_newsletter))
             .route("/health_check", web::get().to(health_check))
             // A new entry in our routing table for POST /subscriptions requests
             .route("/subscriptions", web::post().to(subscribe))
