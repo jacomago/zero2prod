@@ -1,5 +1,6 @@
 //! tests/api/newsletter.rs
 use crate::helpers::{spawn_app, ConfirmationLinks, TestApp};
+use reqwest::StatusCode;
 use uuid::Uuid;
 use wiremock::matchers::{any, method, path};
 use wiremock::{Mock, ResponseTemplate};
@@ -10,7 +11,7 @@ async fn newsletters_are_not_delivered_to_unconfirmed_subscribers() {
     let app = spawn_app().await;
     create_unconfirmed_subscriber(&app).await;
     Mock::given(any())
-        .respond_with(ResponseTemplate::new(200))
+        .respond_with(ResponseTemplate::new(StatusCode::OK))
         // We assert that no request is fired at Postmark! .expect(0)
         .mount(&app.email_server)
         .await;
@@ -25,7 +26,7 @@ async fn newsletters_are_not_delivered_to_unconfirmed_subscribers() {
     let response = app.post_newsletters(newsletter_request_body).await;
 
     // Assert
-    assert_eq!(response.status().as_u16(), 200);
+    assert_eq!(response.status(), StatusCode::OK);
     // Mock verifies on Drop that we haven't sent the newsletter email
 }
 
@@ -37,7 +38,7 @@ async fn newsletters_are_delivered_to_confirmed_subscribers() {
 
     Mock::given(path("/email"))
         .and(method("POST"))
-        .respond_with(ResponseTemplate::new(200))
+        .respond_with(ResponseTemplate::new(StatusCode::OK))
         .expect(1)
         .mount(&app.email_server)
         .await;
@@ -51,7 +52,7 @@ async fn newsletters_are_delivered_to_confirmed_subscribers() {
     let response = app.post_newsletters(newsletter_request_body).await;
 
     // Assert
-    assert_eq!(response.status().as_u16(), 200);
+    assert_eq!(response.status(), StatusCode::OK);
     // Mock verifies on Drop that we have sent the newsletter email
 }
 
@@ -80,7 +81,7 @@ async fn newsletters_returns_400_for_invalid_data() {
         // Assert
         assert_eq!(
             400,
-            response.status().as_u16(),
+            response.status(),
             "The API did not fail with 400 Bad Request when the payload was {}.",
             error_message
         );
@@ -91,7 +92,7 @@ async fn create_unconfirmed_subscriber(app: &TestApp) -> ConfirmationLinks {
     let body = "name=le%20guin&email=ursula_le_guin%40gmail.com";
     let _mock_guard = Mock::given(path("/email"))
         .and(method("POST"))
-        .respond_with(ResponseTemplate::new(200))
+        .respond_with(ResponseTemplate::new(StatusCode::OK))
         .named("Create unconfirmed subscriber")
         .expect(1)
         .mount_as_scoped(&app.email_server)
@@ -139,7 +140,7 @@ async fn requests_missing_authorization_are_rejected() {
         .expect("Failed to execute request.");
 
     // Assert
-    assert_eq!(401, response.status().as_u16());
+    assert_eq!(StatusCode::UNAUTHORIZED, response.status());
     assert_eq!(
         r#"Basic realm="publish""#,
         response.headers()["WWW-Authenticate"]
@@ -168,7 +169,7 @@ async fn non_existing_user_is_rejected() {
         .expect("Failed to execute request.");
 
     // Assert
-    assert_eq!(401, response.status().as_u16());
+    assert_eq!(StatusCode::UNAUTHORIZED, response.status());
     assert_eq!(
         r#"Basic realm="publish""#,
         response.headers()["WWW-Authenticate"]
@@ -197,7 +198,7 @@ async fn invalid_password_is_rejected() {
         .expect("Failed to execute request.");
 
     // Assert
-    assert_eq!(401, response.status().as_u16());
+    assert_eq!(StatusCode::UNAUTHORIZED, response.status());
     assert_eq!(
         r#"Basic realm="publish""#,
         response.headers()["WWW-Authenticate"]

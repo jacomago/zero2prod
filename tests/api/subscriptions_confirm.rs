@@ -11,7 +11,7 @@ async fn confirmations_without_token_are_rejected_with_a_400() {
         .unwrap();
 
     // Assert
-    assert_eq!(response.status().as_u16(), 400);
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
 }
 
 #[tokio::test]
@@ -28,9 +28,10 @@ async fn confirmations_without_valid_token_are_rejected_with_a_400() {
     .unwrap();
 
     // Assert
-    assert_eq!(response.status().as_u16(), 400);
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
 }
 
+use reqwest::StatusCode;
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, ResponseTemplate};
 
@@ -42,7 +43,7 @@ async fn the_link_returned_by_subscribe_returns_a_200_if_called() {
 
     Mock::given(path("/email"))
         .and(method("POST"))
-        .respond_with(ResponseTemplate::new(200))
+        .respond_with(ResponseTemplate::new(StatusCode::OK))
         .mount(&app.email_server)
         .await;
 
@@ -54,7 +55,7 @@ async fn the_link_returned_by_subscribe_returns_a_200_if_called() {
     let response = reqwest::get(confirmation_links.html).await.unwrap();
 
     // Assert
-    assert_eq!(response.status().as_u16(), 200);
+    assert_eq!(response.status(), StatusCode::OK);
 }
 
 #[tokio::test]
@@ -65,7 +66,7 @@ async fn clicking_on_the_confirmation_link_confirms_a_subscriber() {
 
     Mock::given(path("/email"))
         .and(method("POST"))
-        .respond_with(ResponseTemplate::new(200))
+        .respond_with(ResponseTemplate::new(StatusCode::OK))
         .mount(&app.email_server)
         .await;
 

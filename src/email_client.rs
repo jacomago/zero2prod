@@ -71,6 +71,7 @@ mod tests {
     use fake::faker::internet::en::SafeEmail;
     use fake::faker::lorem::en::{Paragraph, Sentence};
     use fake::{Fake, Faker};
+    use reqwest::StatusCode;
     use secrecy::Secret;
     use wiremock::matchers::{header, header_exists, method, path};
     use wiremock::Request;
@@ -132,7 +133,7 @@ mod tests {
             .and(path("/email"))
             .and(method("POST"))
             .and(SendEmailBodyMatcher)
-            .respond_with(ResponseTemplate::new(200))
+            .respond_with(ResponseTemplate::new(StatusCode::OK))
             .expect(1)
             .mount(&mock_server)
             .await;
@@ -160,7 +161,7 @@ mod tests {
         // We add the bare minimum needed to trigger the path we want
         // to test in `send_email`.
         Mock::given(any())
-            .respond_with(ResponseTemplate::new(200))
+            .respond_with(ResponseTemplate::new(StatusCode::OK))
             .expect(1)
             .mount(&mock_server)
             .await;
@@ -203,7 +204,7 @@ mod tests {
         let mock_server = MockServer::start().await;
         let email_client = email_client(mock_server.uri());
 
-        let response = ResponseTemplate::new(200)
+        let response = ResponseTemplate::new(StatusCode::OK)
             // 3 minutes!
             .set_delay(std::time::Duration::from_secs(180));
         Mock::given(any())

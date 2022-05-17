@@ -9,14 +9,14 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
     let body = "name=le%20guin&email=ursula_le_guin%40gmail.com";
     Mock::given(path("/email"))
         .and(method("POST"))
-        .respond_with(ResponseTemplate::new(200))
+        .respond_with(ResponseTemplate::new(StatusCode::OK))
         .mount(&app.email_server)
         .await;
 
     let response = app.post_subscriptions(body.into()).await;
 
     // Assert
-    assert_eq!(200, response.status().as_u16());
+    assert_eq!(StatusCode::OK, response.status());
 }
 
 #[tokio::test]
@@ -27,7 +27,7 @@ async fn subscribe_persists_the_new_subscriber() {
     let body = "name=le%20guin&email=ursula_le_guin%40gmail.com";
     Mock::given(path("/email"))
         .and(method("POST"))
-        .respond_with(ResponseTemplate::new(200))
+        .respond_with(ResponseTemplate::new(StatusCode::OK))
         .mount(&app.email_server)
         .await;
 
@@ -59,7 +59,7 @@ async fn subscribe_returns_a_400_when_data_is_missing() {
         // Assert
         assert_eq!(
             400,
-            response.status().as_u16(),
+            response.status(),
             // Additional customised error message on test failure
             "The API did not fail with 400 Bad Request when the payload was {}.",
             error_message
@@ -83,13 +83,14 @@ async fn subscribe_returns_a_400_when_fields_are_present_but_invalid() {
         // Assert
         assert_eq!(
             400,
-            response.status().as_u16(),
+            response.status(),
             "The API did not return a 400 Bad Request when the payload was {}.",
             description
         );
     }
 }
 
+use reqwest::StatusCode;
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, ResponseTemplate};
 #[tokio::test]
@@ -100,7 +101,7 @@ async fn subscribe_sends_a_confirmation_email_for_valid_data() {
 
     Mock::given(path("/email"))
         .and(method("POST"))
-        .respond_with(ResponseTemplate::new(200))
+        .respond_with(ResponseTemplate::new(StatusCode::OK))
         .expect(1)
         .mount(&app.email_server)
         .await;
@@ -120,7 +121,7 @@ async fn two_subscribes_sends_two_confirmation_emails_for_valid_data() {
 
     Mock::given(path("/email"))
         .and(method("POST"))
-        .respond_with(ResponseTemplate::new(200))
+        .respond_with(ResponseTemplate::new(StatusCode::OK))
         .expect(2)
         .mount(&app.email_server)
         .await;
@@ -141,7 +142,7 @@ async fn subscribe_sends_a_confirmation_email_with_a_link() {
 
     Mock::given(path("/email"))
         .and(method("POST"))
-        .respond_with(ResponseTemplate::new(200))
+        .respond_with(ResponseTemplate::new(StatusCode::OK))
         .mount(&app.email_server)
         .await;
 
@@ -172,5 +173,5 @@ async fn subscribe_fails_if_there_is_a_fatal_database_error() {
     let response = app.post_subscriptions(body.into()).await;
 
     // Assert
-    assert_eq!(response.status().as_u16(), 500);
+    assert_eq!(response.status(), 500);
 }
