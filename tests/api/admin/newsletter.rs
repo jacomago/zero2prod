@@ -1,4 +1,4 @@
-use crate::helpers::{spawn_app, ConfirmationLinks, TestApp, assert_is_redirect_to};
+use crate::helpers::{assert_is_redirect_to, spawn_app, ConfirmationLinks, TestApp};
 use reqwest::StatusCode;
 use uuid::Uuid;
 use wiremock::matchers::{any, method, path};
@@ -16,7 +16,14 @@ async fn newsletters_are_not_delivered_to_unconfirmed_subscribers() {
         .await;
 
     // Act
-    // A sketch of the newsletter payload structure. // We might change it later on.
+
+    // Act - Part 1 - Login
+    let login_body = serde_json::json!({
+        "username": &app.test_user.username,
+        "password": &app.test_user.password });
+    let response = app.post_login(&login_body).await;
+    assert_is_redirect_to(&response, "/admin/dashboard");
+
     let newsletter_request_body = serde_json::json!({
         "title": "Newsletter title", "content": {
         "text": "Newsletter body as plain text",
@@ -27,6 +34,11 @@ async fn newsletters_are_not_delivered_to_unconfirmed_subscribers() {
     // Assert
     assert_eq!(response.status(), StatusCode::OK);
     // Mock verifies on Drop that we haven't sent the newsletter email
+
+    // Act - Part 3 - Logout
+    let response = app.post_logout().await;
+    assert_is_redirect_to(&response, "/login");
+
 }
 
 #[tokio::test]
@@ -43,6 +55,13 @@ async fn newsletters_are_delivered_to_confirmed_subscribers() {
         .await;
 
     // Act
+    // Act - Part 1 - Login
+    let login_body = serde_json::json!({
+        "username": &app.test_user.username,
+        "password": &app.test_user.password });
+    let response = app.post_login(&login_body).await;
+    assert_is_redirect_to(&response, "/admin/dashboard");
+
     let newsletter_request_body = serde_json::json!({
         "title": "Newsletter title", "content": {
         "text": "Newsletter body as plain text",
@@ -53,6 +72,10 @@ async fn newsletters_are_delivered_to_confirmed_subscribers() {
     // Assert
     assert_eq!(response.status(), StatusCode::OK);
     // Mock verifies on Drop that we have sent the newsletter email
+
+    // Act - Part 3 - Logout
+    let response = app.post_logout().await;
+    assert_is_redirect_to(&response, "/login");
 }
 
 #[tokio::test]
@@ -74,6 +97,13 @@ async fn newsletters_returns_400_for_invalid_data() {
         ),
     ];
 
+    // Act - Part 1 - Login
+    let login_body = serde_json::json!({
+        "username": &app.test_user.username,
+        "password": &app.test_user.password });
+    let response = app.post_login(&login_body).await;
+    assert_is_redirect_to(&response, "/admin/dashboard");
+
     for (invalid_body, error_message) in test_cases {
         let response = app.post_newsletters(invalid_body).await;
 
@@ -85,6 +115,10 @@ async fn newsletters_returns_400_for_invalid_data() {
             error_message
         );
     }
+
+    // Act - Part 3 - Logout
+    let response = app.post_logout().await;
+    assert_is_redirect_to(&response, "/login");
 }
 
 async fn create_unconfirmed_subscriber(app: &TestApp) -> ConfirmationLinks {
