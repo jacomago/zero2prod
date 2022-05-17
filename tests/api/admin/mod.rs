@@ -4,7 +4,7 @@ mod change_password;
 mod dashboard;
 
 impl TestApp {
-    pub async fn get_admin_dashboard_html(&self) -> reqwest::Response {
+    pub async fn get_admin_dashboard(&self) -> reqwest::Response {
         self.api_client
             .get(&format!("{}/admin/dashboard", &self.address))
             .send()
@@ -12,8 +12,8 @@ impl TestApp {
             .expect("Failed to execute request")
     }
 
-    pub async fn get_admin_dashboard(&self) -> String {
-        self.get_admin_dashboard_html().await.text().await.unwrap()
+    pub async fn get_admin_dashboard_html(&self) -> String {
+        self.get_admin_dashboard().await.text().await.unwrap()
     }
 
     pub async fn get_change_password(&self) -> reqwest::Response {
