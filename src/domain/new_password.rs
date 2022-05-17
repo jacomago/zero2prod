@@ -1,8 +1,14 @@
 use secrecy::{ExposeSecret, Secret};
 use unicode_segmentation::UnicodeSegmentation;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct NewPassword(Secret<String>);
+
+impl AsRef<Secret<String>> for NewPassword {
+    fn as_ref(&self) -> &Secret<String> {
+        &self.0
+    }
+}
 
 impl NewPassword {
     /// Returns an instance of `NewPassword` if the input satisfies all

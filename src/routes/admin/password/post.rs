@@ -51,9 +51,17 @@ pub async fn change_password(
         };
     }
 
-    if let Err(e) = NewPassword::parse(form.0.new_password) {
-        FlashMessage::error(e).send();
-        return Ok(see_other("/admin/password"));
-    }
-    todo!()
+    let new_password = match NewPassword::parse(form.0.new_password) {
+        Ok(p) => p,
+        Err(e) => {
+            FlashMessage::error(e).send();
+            return Ok(see_other("/admin/password"));
+        }
+    };
+
+    crate::authentication::change_password(user_id, new_password.as_ref().clone(), &pool)
+        .await
+        .map_err(e500)?;
+    FlashMessage::error("Your password has been changed.").send();
+    Ok(see_other("/admin/password"))
 }
