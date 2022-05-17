@@ -38,7 +38,6 @@ async fn newsletters_are_not_delivered_to_unconfirmed_subscribers() {
     // Act - Part 3 - Logout
     let response = app.post_logout().await;
     assert_is_redirect_to(&response, "/login");
-
 }
 
 #[tokio::test]
@@ -157,7 +156,7 @@ async fn create_confirmed_subscriber(app: &TestApp) {
 }
 
 #[tokio::test]
-async fn requests_missing_authorization_are_rejected() {
+async fn requests_not_logged_in_rejected() {
     // Arrange
     let app = spawn_app().await;
 
@@ -174,68 +173,18 @@ async fn requests_missing_authorization_are_rejected() {
 
     // Assert
     assert_eq!(StatusCode::UNAUTHORIZED, response.status());
-    assert_eq!(
-        r#"Basic realm="publish""#,
-        response.headers()["WWW-Authenticate"]
-    );
 }
 
 #[tokio::test]
-async fn non_existing_user_is_rejected() {
+async fn you_must_be_logged_in_to_see_newsletter_page() {
     // Arrange
     let app = spawn_app().await;
 
-    // Random credentials
-    let username = Uuid::new_v4().to_string();
-    let password = Uuid::new_v4().to_string();
-
-    let response = reqwest::Client::new()
-        .post(&format!("{}/newsletters", &app.address))
-        .basic_auth(username, Some(password))
-        .json(&serde_json::json!({
-            "title": "Newsletter title", "content": {
-            "text": "Newsletter body as plain text",
-            "html": "<p>Newsletter body as HTML</p>", }
-        }))
-        .send()
-        .await
-        .expect("Failed to execute request.");
+    // Act
+    let response = app.get_newsletters().await;
 
     // Assert
-    assert_eq!(StatusCode::UNAUTHORIZED, response.status());
-    assert_eq!(
-        r#"Basic realm="publish""#,
-        response.headers()["WWW-Authenticate"]
-    );
-}
-
-#[tokio::test]
-async fn invalid_password_is_rejected() {
-    // Arrange
-    let app = spawn_app().await;
-    let username = &app.test_user.username;
-
-    // Random password
-    let password = Uuid::new_v4().to_string();
-    assert_ne!(app.test_user.password, password);
-    let response = reqwest::Client::new()
-        .post(&format!("{}/newsletters", &app.address))
-        .basic_auth(username, Some(password))
-        .json(&serde_json::json!({
-            "title": "Newsletter title", "content": {
-            "text": "Newsletter body as plain text",
-            "html": "<p>Newsletter body as HTML</p>", }
-        }))
-        .send()
-        .await
-        .expect("Failed to execute request.");
-
-    // Assert
-    assert_eq!(StatusCode::UNAUTHORIZED, response.status());
-    assert_eq!(
-        r#"Basic realm="publish""#,
-        response.headers()["WWW-Authenticate"]
-    );
+    assert_is_redirect_to(&response, "/login");
 }
 
 #[tokio::test]
