@@ -2,6 +2,7 @@ use crate::helpers::TestApp;
 
 mod change_password;
 mod dashboard;
+mod newsletter;
 
 impl TestApp {
     pub async fn get_admin_dashboard(&self) -> reqwest::Response {
@@ -46,5 +47,16 @@ impl TestApp {
             .send()
             .await
             .expect("Failed to execute request.")
+    }
+
+    pub async fn get_newsletters_html(&self) -> String {
+        self.api_client
+            .get(&format!("{}/admin/newsletters", &self.address))
+            .send()
+            .await
+            .expect("Failed to execute request")
+            .text()
+            .await
+            .unwrap()
     }
 }

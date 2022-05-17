@@ -4,6 +4,8 @@ mod password;
 pub use password::*;
 mod logout;
 pub use logout::*;
+mod newsletter;
+pub use newsletter::*;
 
 use actix_web::http::header::LOCATION;
 use actix_web::HttpResponse;

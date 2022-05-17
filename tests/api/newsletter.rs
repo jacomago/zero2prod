@@ -19,9 +19,9 @@ async fn newsletters_are_not_delivered_to_unconfirmed_subscribers() {
     // Act
     // A sketch of the newsletter payload structure. // We might change it later on.
     let newsletter_request_body = serde_json::json!({
-    "title": "Newsletter title", "content": {
-    "text": "Newsletter body as plain text",
-    "html": "<p>Newsletter body as HTML</p>", }
+        "title": "Newsletter title", "content": {
+        "text": "Newsletter body as plain text",
+        "html": "<p>Newsletter body as HTML</p>", }
     });
     let response = app.post_newsletters(newsletter_request_body).await;
 
@@ -45,9 +45,9 @@ async fn newsletters_are_delivered_to_confirmed_subscribers() {
 
     // Act
     let newsletter_request_body = serde_json::json!({
-    "title": "Newsletter title", "content": {
-    "text": "Newsletter body as plain text",
-    "html": "<p>Newsletter body as HTML</p>", }
+        "title": "Newsletter title", "content": {
+        "text": "Newsletter body as plain text",
+        "html": "<p>Newsletter body as HTML</p>", }
     });
     let response = app.post_newsletters(newsletter_request_body).await;
 
@@ -160,9 +160,9 @@ async fn non_existing_user_is_rejected() {
         .post(&format!("{}/newsletters", &app.address))
         .basic_auth(username, Some(password))
         .json(&serde_json::json!({
-        "title": "Newsletter title", "content": {
-        "text": "Newsletter body as plain text",
-        "html": "<p>Newsletter body as HTML</p>", }
+            "title": "Newsletter title", "content": {
+            "text": "Newsletter body as plain text",
+            "html": "<p>Newsletter body as HTML</p>", }
         }))
         .send()
         .await
@@ -189,9 +189,9 @@ async fn invalid_password_is_rejected() {
         .post(&format!("{}/newsletters", &app.address))
         .basic_auth(username, Some(password))
         .json(&serde_json::json!({
-        "title": "Newsletter title", "content": {
-        "text": "Newsletter body as plain text",
-        "html": "<p>Newsletter body as HTML</p>", }
+            "title": "Newsletter title", "content": {
+            "text": "Newsletter body as plain text",
+            "html": "<p>Newsletter body as HTML</p>", }
         }))
         .send()
         .await
@@ -203,14 +203,4 @@ async fn invalid_password_is_rejected() {
         r#"Basic realm="publish""#,
         response.headers()["WWW-Authenticate"]
     );
-}
-
-#[tokio::test]
-async fn newsletters_page_is_not_empty() {
-    // Arrange
-    let app = spawn_app().await;
-
-    // Act
-    let html_page = app.get_newsletters_html().await;
-    assert!(html_page.contains(r#"Send a Newsletter"#));
 }
