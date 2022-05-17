@@ -35,17 +35,12 @@ impl ResponseError for PublishError {
 #[derive(serde::Deserialize)]
 pub struct BodyData {
     title: String,
-    content: Content,
-}
-
-#[derive(serde::Deserialize)]
-pub struct Content {
     html: String,
     text: String,
 }
 
 pub async fn publish_newsletter(
-    body: web::Json<BodyData>,
+    body: web::Form<BodyData>,
     pool: web::Data<PgPool>,
     email_client: web::Data<EmailClient>,
     user_id: web::ReqData<UserId>,
@@ -58,12 +53,7 @@ pub async fn publish_newsletter(
         match subscriber {
             Ok(subscriber) => {
                 email_client
-                    .send_email(
-                        &subscriber.email,
-                        &body.title,
-                        &body.content.html,
-                        &body.content.text,
-                    )
+                    .send_email(&subscriber.email, &body.title, &body.html, &body.text)
                     .await
                     .with_context(|| {
                         format!("Failed to send newsletter issue to {}", subscriber.email)
