@@ -131,9 +131,9 @@ async fn requests_missing_authorization_are_rejected() {
     let response = reqwest::Client::new()
         .post(&format!("{}/newsletters", &app.address))
         .json(&serde_json::json!({
-        "title": "Newsletter title", "content": {
-        "text": "Newsletter body as plain text",
-        "html": "<p>Newsletter body as HTML</p>", }
+            "title": "Newsletter title", "content": {
+            "text": "Newsletter body as plain text",
+            "html": "<p>Newsletter body as HTML</p>", }
         }))
         .send()
         .await
@@ -203,4 +203,14 @@ async fn invalid_password_is_rejected() {
         r#"Basic realm="publish""#,
         response.headers()["WWW-Authenticate"]
     );
+}
+
+#[tokio::test]
+async fn newsletters_page_is_not_empty() {
+    // Arrange
+    let app = spawn_app().await;
+
+    // Act
+    let html_page = app.get_newsletters_html().await;
+    assert!(html_page.contains(r#"Send a Newsletter"#));
 }
