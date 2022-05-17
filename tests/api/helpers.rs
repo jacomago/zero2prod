@@ -1,6 +1,7 @@
 use argon2::password_hash::SaltString;
 use argon2::{Algorithm, Argon2, Params, PasswordHasher, Version};
 use once_cell::sync::Lazy;
+use reqwest::StatusCode;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use uuid::Uuid;
 use wiremock::MockServer;
@@ -208,6 +209,6 @@ impl TestUser {
 }
 
 pub fn assert_is_redirect_to(response: &reqwest::Response, location: &str) {
-    assert_eq!(response.status(), 303);
+    assert_eq!(response.status(), StatusCode::SEE_OTHER);
     assert_eq!(response.headers().get("Location").unwrap(), location);
 }

@@ -1,6 +1,5 @@
 use crate::helpers::{assert_is_redirect_to, spawn_app, ConfirmationLinks, TestApp};
 use reqwest::StatusCode;
-use uuid::Uuid;
 use wiremock::matchers::{any, method, path};
 use wiremock::{Mock, ResponseTemplate};
 
@@ -156,23 +155,19 @@ async fn create_confirmed_subscriber(app: &TestApp) {
 }
 
 #[tokio::test]
-async fn requests_not_logged_in_rejected() {
+async fn you_must_be_logged_in_to_send_newsletter() {
     // Arrange
     let app = spawn_app().await;
 
-    let response = reqwest::Client::new()
-        .post(&format!("{}/newsletters", &app.address))
-        .json(&serde_json::json!({
-            "title": "Newsletter title", "content": {
-            "text": "Newsletter body as plain text",
-            "html": "<p>Newsletter body as HTML</p>", }
-        }))
-        .send()
-        .await
-        .expect("Failed to execute request.");
+    let newsletter_request_body = serde_json::json!({
+        "title": "Newsletter title", "content": {
+        "text": "Newsletter body as plain text",
+        "html": "<p>Newsletter body as HTML</p>", }
+    });
+    let response = app.post_newsletters(newsletter_request_body).await;
 
     // Assert
-    assert_eq!(StatusCode::UNAUTHORIZED, response.status());
+    assert_is_redirect_to(&response, "/login");
 }
 
 #[tokio::test]
