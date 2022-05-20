@@ -11,9 +11,10 @@ pub async fn newsletter_form(
     for m in flash_messages.iter() {
         writeln!(error_message, "<p><i>{}</i></p>", m.content()).unwrap();
     }
-
+    let idempotency_key = uuid::Uuid::new_v4();
     let mut context = tera::Context::new();
     context.insert("error_message", &error_message);
+    context.insert("idempotency_key", &idempotency_key);
 
     Ok(HttpResponse::Ok().content_type(ContentType::html()).body(
         TEMPLATES

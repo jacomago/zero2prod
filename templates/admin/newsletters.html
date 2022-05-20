@@ -4,8 +4,9 @@
 {{ error_message | safe }}
 <form action="/newsletters" method="post">
     <label>Title <input type="text" placeholder="Title" name="title"> </label>
-    <label>Plain Text Body <textarea  placeholder="text" name="text"> </label>
+    <label>Plain Text Body <textarea placeholder="text" name="text"> </label>
     <label>Html Body <textarea type="text" placeholder="html" name="html"> </label>
+    <input hidden type="text" name="idempotency_key" value="{{idempotency_key}}">
     <button type="submit">Send Newsletter</button>
 </form>
 <p><a href="/admin/dashboard">&lt;- Back</a></p>
