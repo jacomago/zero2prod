@@ -6,6 +6,8 @@ use sqlx::PgPool;
 
 use crate::domain::SubscriberEmail;
 use crate::email_client::EmailClient;
+use crate::idempotency::IdempotencyKey;
+use crate::routes::e400;
 use crate::routes::{e500, see_other};
 
 #[derive(serde::Deserialize)]
@@ -13,19 +15,27 @@ pub struct BodyData {
     title: String,
     html: String,
     text: String,
+    idempotency_key: String,
 }
 
 pub async fn publish_newsletter(
-    body: web::Form<BodyData>,
+    form: web::Form<BodyData>,
     pool: web::Data<PgPool>,
     email_client: web::Data<EmailClient>,
 ) -> Result<HttpResponse, actix_web::Error> {
+    let BodyData {
+        title,
+        html,
+        text,
+        idempotency_key,
+    } = form.0;
+    let idempotency_key: IdempotencyKey = idempotency_key.try_into().map_err(e400)?;
     let subscribers = get_confirmed_subscribers(&pool).await.map_err(e500)?;
     for subscriber in subscribers {
         match subscriber {
             Ok(subscriber) => {
                 email_client
-                    .send_email(&subscriber.email, &body.title, &body.html, &body.text)
+                    .send_email(&subscriber.email, &title, &html, &text)
                     .await
                     .with_context(|| {
                         format!("Failed to send newsletter issue to {}", subscriber.email)
