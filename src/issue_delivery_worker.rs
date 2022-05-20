@@ -58,7 +58,8 @@ async fn dequeue_task(
     let mut transaction = pool.begin().await?;
     let r = sqlx::query!(
         r#"
-        SELECT newsletter_issue_id, subscriber_email FROM issue_delivery_queue
+        SELECT newsletter_issue_id, subscriber_email 
+        FROM issue_delivery_queue
         FOR UPDATE
         SKIP LOCKED
         LIMIT 1
