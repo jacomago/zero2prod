@@ -28,6 +28,7 @@ pub async fn try_execute_task(
     execute_after_seconds: u64,
 ) -> Result<ExecutionOutcome, anyhow::Error> {
     let task = dequeue_task(pool, max_retries).await?;
+    dbg!(&task);
     if task.is_none() {
         return Ok(ExecutionOutcome::EmptyQueue);
     }
