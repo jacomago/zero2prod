@@ -1,4 +1,5 @@
-use crate::{email_client::EmailClient, domain::SubscriberEmail};
+use crate::{domain::SubscriberEmail, email_client::EmailClient};
+use chrono::Utc;
 use sqlx::{PgPool, Postgres, Transaction};
 use tracing::{field::display, Span};
 use uuid::Uuid;
@@ -6,13 +7,13 @@ use uuid::Uuid;
 #[tracing::instrument( 
     skip_all,
     fields( 
-        newsletter_issue_id=tracing::field::Empty, 
+        newsletter_issue_id=tracing::field::Empty,
         subscriber_email=tracing::field::Empty
     ),
     err
 )]
 async fn try_execute_task(pool: &PgPool, email_client: &EmailClient) -> Result<(), anyhow::Error> {
-    if let Some((transaction, issue_id, email)) = dequeue_task(pool).await? {
+    if let Some((transaction, issue_id, email)) = dequeue_task(pool, 5).await? {
         Span::current()
             .record("newsletter_issue_id", &display(issue_id))
             .record("subscriber_email", &display(&email));
@@ -32,8 +33,9 @@ async fn try_execute_task(pool: &PgPool, email_client: &EmailClient) -> Result<(
                         error.cause_chain = ?e,
                         error.message = %e,
                         "Failed to deliver issue to a confirmed subscriber. \
-                         Skipping.", 
+                         Skipping.",
                     );
+                    retry_later_task(pool, issue_id, &email).await?;
                 }
             }
             Err(e) => {
@@ -54,16 +56,20 @@ type PgTransaction = Transaction<'static, Postgres>;
 #[tracing::instrument(skip_all)]
 async fn dequeue_task(
     pool: &PgPool,
+    max_retries: i16,
 ) -> Result<Option<(PgTransaction, Uuid, String)>, anyhow::Error> {
     let mut transaction = pool.begin().await?;
     let r = sqlx::query!(
         r#"
-        SELECT newsletter_issue_id, subscriber_email 
-        FROM issue_delivery_queue
-        FOR UPDATE
-        SKIP LOCKED
-        LIMIT 1
+            SELECT newsletter_issue_id, subscriber_email
+              FROM issue_delivery_queue
+             WHERE n_retries     < $1
+               AND execute_after > CURRENT_TIMESTAMP
+            FOR UPDATE
+            SKIP LOCKED
+            LIMIT 1
         "#,
+        max_retries
     )
     .fetch_optional(&mut transaction)
     .await?;
@@ -77,6 +83,29 @@ async fn dequeue_task(
     } else {
         Ok(None)
     }
+}
+
+async fn retry_later_task(
+    pool: &PgPool,
+    issue_id: Uuid,
+    email: &SubscriberEmail,
+) -> Result<(), anyhow::Error> {
+    sqlx::query!(
+        r#"
+            UPDATE issue_delivery_queue
+            SET n_retries = $3,
+                execute_after = $4
+            WHERE newsletter_issue_id = $1
+              AND subscriber_email = $2 
+        "#,
+        issue_id,
+        email.as_ref(),
+        0_i16,
+        Utc::now()
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
 }
 
 #[tracing::instrument(skip_all)]

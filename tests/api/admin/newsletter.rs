@@ -82,8 +82,8 @@ async fn newsletters_returns_400_for_invalid_data() {
     let test_cases = vec![
         (
             serde_json::json!({
-            "text": "Newsletter body as plain text",
-            "html": "<p>Newsletter body as HTML</p>",
+                "text": "Newsletter body as plain text",
+                "html": "<p>Newsletter body as HTML</p>",
             }),
             "missing title",
         ),
