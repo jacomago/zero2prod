@@ -1,8 +1,9 @@
 use crate::{domain::SubscriberEmail, email_client::EmailClient};
-use chrono::{Utc, Duration};
+use chrono::Utc;
 use sqlx::{PgPool, Postgres, Transaction};
 use tracing::{field::display, Span};
 use uuid::Uuid;
+use std::time::Duration;
 
 #[tracing::instrument( 
     skip_all,
@@ -89,9 +90,9 @@ async fn retry_later_task(
     pool: &PgPool,
     issue_id: Uuid,
     email: &SubscriberEmail,
-    seconds: i64
+    seconds: i64,
 ) -> Result<(), anyhow::Error> {
-    let execute_after = Utc::now() + Duration::seconds(seconds);
+    let execute_after = Utc::now() + chrono::Duration::seconds(seconds);
     sqlx::query!(
         r#"
             UPDATE issue_delivery_queue
@@ -155,4 +156,12 @@ async fn get_issue(pool: &PgPool, issue_id: Uuid) -> Result<NewsletterIssue, any
     .fetch_one(pool)
     .await?;
     Ok(issue)
+}
+
+async fn worker_loop(pool: PgPool, email_client: EmailClient) -> Result<(), anyhow::Error> {
+    loop {
+        if try_execute_task(&pool, &email_client).await.is_err() {
+            tokio::time::sleep(Duration::from_secs(1)).await;
+        }
+    }
 }
