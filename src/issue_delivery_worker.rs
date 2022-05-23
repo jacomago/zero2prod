@@ -1,5 +1,5 @@
 use crate::{domain::SubscriberEmail, email_client::EmailClient};
-use chrono::Utc;
+use chrono::{Utc, Duration};
 use sqlx::{PgPool, Postgres, Transaction};
 use tracing::{field::display, Span};
 use uuid::Uuid;
@@ -13,7 +13,7 @@ use uuid::Uuid;
     err
 )]
 async fn try_execute_task(pool: &PgPool, email_client: &EmailClient) -> Result<(), anyhow::Error> {
-    if let Some((transaction, issue_id, email)) = dequeue_task(pool, 5).await? {
+    if let Some((transaction, issue_id, email)) = dequeue_task(pool, 2).await? {
         Span::current()
             .record("newsletter_issue_id", &display(issue_id))
             .record("subscriber_email", &display(&email));
@@ -35,7 +35,7 @@ async fn try_execute_task(pool: &PgPool, email_client: &EmailClient) -> Result<(
                         "Failed to deliver issue to a confirmed subscriber. \
                          Skipping.",
                     );
-                    retry_later_task(pool, issue_id, &email).await?;
+                    retry_later_task(pool, issue_id, &email, 5).await?;
                 }
             }
             Err(e) => {
@@ -89,19 +89,23 @@ async fn retry_later_task(
     pool: &PgPool,
     issue_id: Uuid,
     email: &SubscriberEmail,
+    seconds: i64
 ) -> Result<(), anyhow::Error> {
+    let execute_after = Utc::now() + Duration::seconds(seconds);
     sqlx::query!(
         r#"
             UPDATE issue_delivery_queue
-            SET n_retries = $3,
-                execute_after = $4
+            SET n_retries = (SELECT n_retries
+                               FROM issue_delivery_queue
+                              WHERE newsletter_issue_id = $1
+                                AND subscriber_email = $2 ) + 1,
+                execute_after = $3
             WHERE newsletter_issue_id = $1
               AND subscriber_email = $2 
         "#,
         issue_id,
         email.as_ref(),
-        0_i16,
-        Utc::now()
+        execute_after
     )
     .execute(pool)
     .await?;
