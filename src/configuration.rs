@@ -11,6 +11,7 @@ pub struct Settings {
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
     pub email_client: EmailClientSettings,
+    pub worker: WorkerSettings,
     pub redis_uri: Secret<String>,
 }
 
@@ -29,6 +30,11 @@ pub struct EmailClientSettings {
     pub sender_email: String,
     pub authorization_token: Secret<String>,
     pub timeout_milliseconds: u64,
+}
+#[derive(serde::Deserialize, Clone)]
+pub struct WorkerSettings {
+    pub execute_after_seconds: u64,
+    pub max_retries: u64,
 }
 
 impl EmailClientSettings {

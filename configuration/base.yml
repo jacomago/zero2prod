@@ -15,4 +15,7 @@ email_client:
   sender_email: "test@gmail.com"
   authorization_token: "my-secret-token"
   timeout_milliseconds: 10000
+worker:
+  max_retries: 5
+  execute_after_seconds: 5
 redis_uri: "redis://127.0.0.1:6379"

@@ -13,9 +13,9 @@ enum ExecutionOutcome {
     EmptyQueue,
 }
 
-#[tracing::instrument( 
+#[tracing::instrument(
     skip_all,
-    fields( 
+    fields(
         newsletter_issue_id=tracing::field::Empty,
         subscriber_email=tracing::field::Empty
     ),
@@ -24,8 +24,10 @@ enum ExecutionOutcome {
 async fn try_execute_task(
     pool: &PgPool,
     email_client: &EmailClient,
+    max_retries: u64,
+    execute_after_seconds: u64,
 ) -> Result<ExecutionOutcome, anyhow::Error> {
-    let task = dequeue_task(pool, 5).await?;
+    let task = dequeue_task(pool, max_retries).await?;
     if task.is_none() {
         return Ok(ExecutionOutcome::EmptyQueue);
     }
@@ -51,7 +53,7 @@ async fn try_execute_task(
                     "Failed to deliver issue to a confirmed subscriber. \
                      Skipping.",
                 );
-                retry_later_task(pool, issue_id, &email, 5).await?;
+                retry_later_task(pool, issue_id, &email, execute_after_seconds).await?;
             }
         }
         Err(e) => {
@@ -72,7 +74,7 @@ type PgTransaction = Transaction<'static, Postgres>;
 #[tracing::instrument(skip_all)]
 async fn dequeue_task(
     pool: &PgPool,
-    max_retries: i16,
+    max_retries: u64,
 ) -> Result<Option<(PgTransaction, Uuid, String)>, anyhow::Error> {
     let mut transaction = pool.begin().await?;
     let r = sqlx::query!(
@@ -85,7 +87,7 @@ async fn dequeue_task(
             SKIP LOCKED
             LIMIT 1
         "#,
-        max_retries
+        max_retries as i64
     )
     .fetch_optional(&mut transaction)
     .await?;
@@ -105,9 +107,9 @@ async fn retry_later_task(
     pool: &PgPool,
     issue_id: Uuid,
     email: &SubscriberEmail,
-    seconds: i64,
+    seconds: u64,
 ) -> Result<(), anyhow::Error> {
-    let execute_after = Utc::now() + chrono::Duration::seconds(seconds);
+    let execute_after = Utc::now() + chrono::Duration::seconds(seconds as i64);
     sqlx::query!(
         r#"
             UPDATE issue_delivery_queue
@@ -173,9 +175,14 @@ async fn get_issue(pool: &PgPool, issue_id: Uuid) -> Result<NewsletterIssue, any
     Ok(issue)
 }
 
-async fn worker_loop(pool: PgPool, email_client: EmailClient) -> Result<(), anyhow::Error> {
+async fn worker_loop(
+    pool: PgPool,
+    email_client: EmailClient,
+    max_retries: u64,
+    execute_after_seconds: u64,
+) -> Result<(), anyhow::Error> {
     loop {
-        match try_execute_task(&pool, &email_client).await {
+        match try_execute_task(&pool, &email_client, max_retries, execute_after_seconds).await {
             Ok(ExecutionOutcome::EmptyQueue) => {
                 tokio::time::sleep(Duration::from_secs(10)).await;
             }
@@ -200,5 +207,11 @@ pub async fn run_worker_until_stopped(configuration: Settings) -> Result<(), any
         configuration.email_client.authorization_token,
         timeout,
     );
-    worker_loop(connection_pool, email_client).await
+    worker_loop(
+        connection_pool,
+        email_client,
+        configuration.worker.max_retries,
+        configuration.worker.execute_after_seconds,
+    )
+    .await
 }
