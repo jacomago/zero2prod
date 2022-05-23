@@ -8,7 +8,7 @@ use std::time::Duration;
 use tracing::{field::display, Span};
 use uuid::Uuid;
 
-enum ExecutionOutcome {
+pub enum ExecutionOutcome {
     TaskCompleted,
     EmptyQueue,
 }
@@ -21,7 +21,7 @@ enum ExecutionOutcome {
     ),
     err
 )]
-async fn try_execute_task(
+pub async fn try_execute_task(
     pool: &PgPool,
     email_client: &EmailClient,
     max_retries: u64,
