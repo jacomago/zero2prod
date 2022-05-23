@@ -6,7 +6,7 @@ use fake::faker::name::en::Name;
 use fake::Fake;
 use reqwest::StatusCode;
 use wiremock::matchers::{any, method, path};
-use wiremock::{Mock,  ResponseTemplate};
+use wiremock::{Mock, ResponseTemplate};
 
 #[tokio::test]
 async fn newsletters_are_not_delivered_to_unconfirmed_subscribers() {

@@ -1,6 +1,6 @@
 use crate::authentication::reject_anonymous_users;
 use crate::configuration::Settings;
-use crate::email_client::{EmailClient, self};
+use crate::email_client::EmailClient;
 use actix_session::storage::RedisSessionStore;
 use actix_session::SessionMiddleware;
 use actix_web::cookie::Key;

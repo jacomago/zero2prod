@@ -49,7 +49,7 @@ impl EmailClientSettings {
             timeout,
         )
     }
-    
+
     pub fn sender(&self) -> Result<SubscriberEmail, String> {
         SubscriberEmail::parse(self.sender_email.clone())
     }

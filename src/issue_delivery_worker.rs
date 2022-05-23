@@ -1,5 +1,5 @@
 use crate::{
-    configuration::Settings, domain::SubscriberEmail, email_client::{EmailClient, self},
+    configuration::Settings, domain::SubscriberEmail, email_client::EmailClient,
     startup::get_connection_pool,
 };
 use chrono::Utc;
